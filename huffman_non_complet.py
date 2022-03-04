@@ -3,10 +3,11 @@
 #####   Codes de Huffman             		###
 ####################################################
 
-from heapq import *
+"""from heapq import *
+import heapq"""
 
 ###  distribution de proba sur les letrres
-
+"""
 caracteres = [
     " ",
     "a",
@@ -66,7 +67,10 @@ proba = [
     0.0021,
     0.0008,
 ]
+"""
 
+caracteres = ["E", "i", "y", "l", "k", "PT", "r", "s", "n", "a", "sp", "e"]
+proba = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 8]
 
 def frequences():
     table = {}
@@ -75,18 +79,27 @@ def frequences():
         table[caracteres[i]] = proba[i]
     return table
 
+def frequences_depuis_texte(path):
+    nb_symboles = -1
+    with open(path, 'r') as file:
+        while True:
+            c = file.read(1)
+            if not c:
+                break
+            nb_symboles += 1
+            print(c)
+            # à regarder wis a vis du EOF
+            print(nb_symboles)
 
-F = frequences()
-print(F)
-
+frequences_depuis_texte('t')
 ###  la classe Arbre
 
-
 class Arbre:
-    def __init__(self, lettre, gauche=None, droit=None):
+    def __init__(self, frequence, lettre='', gauche=None, droit=None):
         self.gauche = gauche
         self.droit = droit
         self.lettre = lettre
+        self.frequence = frequence
 
     def estFeuille(self):
         return self.gauche == None and self.droit == None
@@ -97,6 +110,8 @@ class Arbre:
     def __str__(self):
         return (
             "<"
+            + str(self.frequence)
+            + "."
             + str(self.lettre)
             + "."
             + str(self.gauche)
@@ -104,13 +119,68 @@ class Arbre:
             + str(self.droit)
             + ">"
         )
+    
+    def __lt__(self, other):
+        return self.frequence < other.frequence
+    
+    def __gt__(self, other):
+        return self.frequence > other.frequence
+    
+    def __eq__(self, other):
+        return self.frequence == other.frequence
+    
+    def __ge__(self, other):
+        return self.frequence >= other.frequence
+    
+    def __le__(self, other):
+        return self.frequence <= other.frequence
+
+
+# ajoute un élément dans l'arbre, avec invariance
+def heappush(liste, arbre):
+    if len(liste) == 1 or not liste:
+        liste.append(arbre)
+        return True
+    for k in range(0, len(liste)-1):
+        if liste[k].frequence <= arbre.frequence and liste[k+1].frequence > arbre.frequence:
+            liste.insert(k+1, arbre)
+            return True
+        elif len(liste) == k+2:
+            liste.append(arbre)
+            return True
+    return False
+
+# enlève le plus petit élement
+def heappop(liste):
+    if not liste:
+        return None
+    return liste.pop(0)
+
+def heapify():
+    pass
 
 
 ###  Ex.1  construction de l'arbre d'Huffamn utilisant la structure de "tas binaire"
 def arbre_huffman(frequences):
-    return
-    # à compléter
+    # pour créer la liste de départ
+    huffman_list = []
+    for i in F:
+        noeud = Arbre(F.get(i), i)
+        huffman_list.append(noeud)
 
+    # on construit l'arbre
+    while len(huffman_list) != 1:
+        for a in huffman_list:
+            print(a)
+        print("--------------")
+        # assemblage des deux arbres en un seul
+        gauche = heappop(huffman_list)
+        droite = heappop(huffman_list)
+        nouveau_noeud = Arbre(gauche.frequence+droite.frequence, gauche=gauche, droit=droite)
+        heappush(huffman_list, nouveau_noeud)
+        #heapify(huffman_list)
+    for a in huffman_list:
+        print(a)
 
 ###  Ex.2  construction du code d'Huffamn
 
@@ -143,3 +213,11 @@ def decodage(arbre, fichierCompresse):
     # à compléter
     decode = decodage(H, "leHorlaEncoded.txt")
     print(decode)
+
+if __name__ == '__main__':
+    F = frequences()
+    #print(F)
+
+    # exo 1
+    print(F)
+    arbre_huffman(F)
