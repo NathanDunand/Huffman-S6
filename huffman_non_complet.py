@@ -7,7 +7,7 @@
 import heapq"""
 
 ###  distribution de proba sur les letrres
-"""
+
 caracteres = [
     " ",
     "a",
@@ -67,35 +67,48 @@ proba = [
     0.0021,
     0.0008,
 ]
-"""
 
-caracteres = ["E", "i", "y", "l", "k", "PT", "r", "s", "n", "a", "sp", "e"]
-proba = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 8]
+# caracteres = ["E", "i", "y", "l", "k", "PT", "r", "s", "n", "a", "sp", "e"]
+# proba = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 8]
 
-def frequences():
+
+def frequences(tableau_car, proba_car):
     table = {}
-    n = len(caracteres)
+    n = len(tableau_car)
     for i in range(n):
-        table[caracteres[i]] = proba[i]
+        table[tableau_car[i]] = proba_car[i]
     return table
+
 
 def frequences_depuis_texte(path):
     nb_symboles = -1
-    with open(path, 'r') as file:
+    occurences = []
+    lettres = []
+    with open(path, "r") as file:
         while True:
             c = file.read(1)
             if not c:
                 break
-            nb_symboles += 1
-            print(c)
-            # à regarder wis a vis du EOF
-            print(nb_symboles)
+            if c != "\n":
+                try:
+                    lettres.index(c)
+                except:
+                    lettres.append(c)
+                    occurences.append(0)
+                index_c = lettres.index(c)
+                occurences[index_c] += 1
+                nb_symboles += 1
 
-frequences_depuis_texte('t')
+    for i in range(0, len(occurences)):
+        occurences[i] = round((occurences[i] / nb_symboles), 4)
+    return frequences(lettres, occurences)
+
+
 ###  la classe Arbre
 
+
 class Arbre:
-    def __init__(self, frequence, lettre='', gauche=None, droit=None):
+    def __init__(self, frequence, lettre="", gauche=None, droit=None):
         self.gauche = gauche
         self.droit = droit
         self.lettre = lettre
@@ -119,19 +132,19 @@ class Arbre:
             + str(self.droit)
             + ">"
         )
-    
+
     def __lt__(self, other):
         return self.frequence < other.frequence
-    
+
     def __gt__(self, other):
         return self.frequence > other.frequence
-    
+
     def __eq__(self, other):
         return self.frequence == other.frequence
-    
+
     def __ge__(self, other):
         return self.frequence >= other.frequence
-    
+
     def __le__(self, other):
         return self.frequence <= other.frequence
 
@@ -141,20 +154,25 @@ def heappush(liste, arbre):
     if len(liste) == 1 or not liste:
         liste.append(arbre)
         return True
-    for k in range(0, len(liste)-1):
-        if liste[k].frequence <= arbre.frequence and liste[k+1].frequence > arbre.frequence:
-            liste.insert(k+1, arbre)
+    for k in range(0, len(liste) - 1):
+        if (
+            liste[k].frequence <= arbre.frequence
+            and liste[k + 1].frequence > arbre.frequence
+        ):
+            liste.insert(k + 1, arbre)
             return True
-        elif len(liste) == k+2:
+        elif len(liste) == k + 2:
             liste.append(arbre)
             return True
     return False
+
 
 # enlève le plus petit élement
 def heappop(liste):
     if not liste:
         return None
     return liste.pop(0)
+
 
 def heapify():
     pass
@@ -176,11 +194,14 @@ def arbre_huffman(frequences):
         # assemblage des deux arbres en un seul
         gauche = heappop(huffman_list)
         droite = heappop(huffman_list)
-        nouveau_noeud = Arbre(gauche.frequence+droite.frequence, gauche=gauche, droit=droite)
+        nouveau_noeud = Arbre(
+            gauche.frequence + droite.frequence, gauche=gauche, droit=droite
+        )
         heappush(huffman_list, nouveau_noeud)
-        #heapify(huffman_list)
+        # heapify(huffman_list)
     for a in huffman_list:
         print(a)
+
 
 ###  Ex.2  construction du code d'Huffamn
 
@@ -214,10 +235,13 @@ def decodage(arbre, fichierCompresse):
     decode = decodage(H, "leHorlaEncoded.txt")
     print(decode)
 
-if __name__ == '__main__':
-    F = frequences()
-    #print(F)
+
+if __name__ == "__main__":
+    a = frequences_depuis_texte("t")
+    print(a)
+    F = frequences(caracteres, proba)
+    # print(F)
 
     # exo 1
     print(F)
-    arbre_huffman(F)
+    # arbre_huffman(F)
