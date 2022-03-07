@@ -7,7 +7,7 @@
 import heapq"""
 
 ###  distribution de proba sur les letrres
-
+"""
 caracteres = [
     " ",
     "a",
@@ -67,9 +67,9 @@ proba = [
     0.0021,
     0.0008,
 ]
-
-# caracteres = ["E", "i", "y", "l", "k", "PT", "r", "s", "n", "a", "sp", "e"]
-# proba = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 8]
+"""
+caracteres = ["E", "i", "y", "l", "k", "PT", "r", "s", "n", "a", "sp", "e"]
+proba = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 8]
 
 
 def frequences(tableau_car, proba_car):
@@ -139,9 +139,6 @@ class Arbre:
     def __gt__(self, other):
         return self.frequence > other.frequence
 
-    def __eq__(self, other):
-        return self.frequence == other.frequence
-
     def __ge__(self, other):
         return self.frequence >= other.frequence
 
@@ -188,9 +185,6 @@ def arbre_huffman(frequences):
 
     # on construit l'arbre
     while len(huffman_list) != 1:
-        for a in huffman_list:
-            print(a)
-        print("--------------")
         # assemblage des deux arbres en un seul
         gauche = heappop(huffman_list)
         droite = heappop(huffman_list)
@@ -199,16 +193,20 @@ def arbre_huffman(frequences):
         )
         heappush(huffman_list, nouveau_noeud)
         # heapify(huffman_list)
-    for a in huffman_list:
-        print(a)
+    return huffman_list
 
 
 ###  Ex.2  construction du code d'Huffamn
 
 
-def parcours(arbre, prefixe, code):
-    return
-    # à compléter
+def parcours(arbre: Arbre, prefixe, code):
+    if not arbre.estFeuille():
+        if arbre.gauche:
+            parcours(arbre.gauche, prefixe + "0", code)
+        if arbre.droit:
+            parcours(arbre.droit, prefixe + "1", code)
+    else:
+        code[arbre.lettre] = prefixe
 
 
 def code_huffman(arbre):
@@ -222,9 +220,7 @@ def code_huffman(arbre):
 
 
 def encodage(dico, fichier):
-    # à compléter
-    encode = encodage(dico, "leHorla.txt")
-    print(encode)
+    return
 
 
 ###  Ex.4  décodage d'un fichier compresse
@@ -237,11 +233,15 @@ def decodage(arbre, fichierCompresse):
 
 
 if __name__ == "__main__":
-    a = frequences_depuis_texte("t")
-    print(a)
-    F = frequences(caracteres, proba)
+    # exo 1
+    # Avec le texte
+    # F = frequences_depuis_texte("texte")
     # print(F)
 
-    # exo 1
-    print(F)
-    # arbre_huffman(F)
+    F = frequences(caracteres, proba)
+    arbre1 = arbre_huffman(F)
+    print(arbre1[0])
+
+    # exo 2
+    codage = code_huffman(arbre1[0])
+    print(codage)
