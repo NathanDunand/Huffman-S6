@@ -68,7 +68,7 @@ proba = [
     0.0008,
 ]
 """
-caracteres = ["E", "i", "y", "l", "k", "PT", "r", "s", "n", "a", "sp", "e"]
+caracteres = ["E", "i", "y", "l", "k", ".", "r", "s", "n", "a", " ", "e"]
 proba = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 8]
 
 
@@ -81,7 +81,7 @@ def frequences(tableau_car, proba_car):
 
 
 def frequences_depuis_texte(path):
-    nb_symboles = -1
+    nb_symboles = 0
     occurences = []
     lettres = []
     with open(path, "r") as file:
@@ -171,23 +171,21 @@ def heappop(liste):
     return liste.pop(0)
 
 
-def heapify():
-    pass
-
-
 ###  Ex.1  construction de l'arbre d'Huffamn utilisant la structure de "tas binaire"
-def arbre_huffman(frequences):
+def arbre_huffman(f):
     # pour créer la liste de départ
     huffman_list = []
-    for i in F:
-        noeud = Arbre(F.get(i), i)
+    for i in f:
+        noeud = Arbre(f.get(i), i)
         huffman_list.append(noeud)
 
     # on construit l'arbre
+    huffman_list.sort()
     while len(huffman_list) != 1:
         # assemblage des deux arbres en un seul
         gauche = heappop(huffman_list)
         droite = heappop(huffman_list)
+        print(gauche.frequence + droite.frequence)
         nouveau_noeud = Arbre(
             gauche.frequence + droite.frequence, gauche=gauche, droit=droite
         )
@@ -219,11 +217,41 @@ def code_huffman(arbre):
 ###  Ex.3  encodage d'un texte contenu dans un fichier
 
 
-def encodage(dico, fichier):
-    return
+def encodage(dico, fichier_entree, fichier_sortie):
+    out_str = ""
+    with open(fichier_entree, "r") as file_in:
+        with open(fichier_sortie, "wb") as file_out:
+            while True:
+                c = file_in.read(1)
+                if not c:
+                    break
+                if not dico.get(c):
+                    c = " "
+                out_c = dico.get(c)
+                out_str += out_c
+
+            # On veut savoir combien d'octet on a
+            nb_it = int(len(out_str) / 8)
+
+            # On veut savoir combien de bit il nous reste
+            stay = len(out_str) % 8
+
+            for i in range(0, nb_it):
+                # On récupère notre octet et on converti notre chaine binaire en integer
+                # Par exemple, on récupère la chaine 10100001 alors on obtient 161
+                buffer = int(out_str[0 + 8 * i : 8 + 8 * i], 2)
+                # On écrit notre nombre décimal en octet dans le fichier
+                # Par exemple on prend notre nombre 161 alors on va l'écrire sous la forme
+                # d'un octet dans le fichier.
+                file_out.write(buffer.to_bytes(1, "little"))
+
+            if stay != 0:
+                buffer = int(out_str[len(out_str) - stay :], 2)
+                file_out.write(buffer.to_bytes(1, "little"))
 
 
 ###  Ex.4  décodage d'un fichier compresse
+# Eerie eyeseen
 
 
 def decodage(arbre, fichierCompresse):
@@ -238,10 +266,20 @@ if __name__ == "__main__":
     # F = frequences_depuis_texte("texte")
     # print(F)
 
-    F = frequences(caracteres, proba)
-    arbre1 = arbre_huffman(F)
-    print(arbre1[0])
+    # F = frequences(caracteres, proba)
+    # arbre1 = arbre_huffman(F)
+    # print(arbre1[0])
 
     # exo 2
-    codage = code_huffman(arbre1[0])
-    print(codage)
+    # codage = code_huffman(arbre1[0])
+    # print(codage)
+
+    # Feyes = frequences_depuis_texte("eyes.txt")
+    Feyes = frequences(caracteres, proba)
+    print(Feyes)
+    eyes_arbre = arbre_huffman(Feyes)
+    for arbre in eyes_arbre:
+        print(arbre)
+    eyes_codage = code_huffman(eyes_arbre[0])
+    print(eyes_codage)
+    encodage(eyes_codage, "eyes.txt", "out")
