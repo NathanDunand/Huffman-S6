@@ -5,6 +5,8 @@
 
 """from heapq import *
 import heapq"""
+import pickle
+import math
 
 ###  distribution de proba sur les letrres
 """
@@ -185,7 +187,6 @@ def arbre_huffman(f):
         # assemblage des deux arbres en un seul
         gauche = heappop(huffman_list)
         droite = heappop(huffman_list)
-        print(gauche.frequence + droite.frequence)
         nouveau_noeud = Arbre(
             gauche.frequence + droite.frequence, gauche=gauche, droit=droite
         )
@@ -217,7 +218,27 @@ def code_huffman(arbre):
 ###  Ex.3  encodage d'un texte contenu dans un fichier
 
 
-def encodage(dico, fichier_entree, fichier_sortie):
+def header_huffman_tree_write(file_out, dico: dict):
+    letter_code_max_size = len(max(dico.values(), key=len))
+    nb_octet_per_letter = math.ceil(letter_code_max_size / 8)
+    nb_letter_in_dico = len(dico)
+
+    longueur_dico = 1 + (1 + 1 + nb_octet_per_letter) * nb_letter_in_dico
+    file_out.write(longueur_dico.to_bytes(1, "little"))
+    file_out.write(nb_octet_per_letter.to_bytes(1, "little"))
+
+    for key in dico:
+        print(key + " " + str(ord(key)))
+        file_out.write(ord(key).to_bytes(1, "little"))
+
+        code_padding = (8 * nb_octet_per_letter) - len(dico.get(key))
+        file_out.write((code_padding).to_bytes(1, "little"))
+
+        print(int(dico.get(key), 2))
+        file_out.write(int(dico.get(key), 2).to_bytes(nb_octet_per_letter, "little"))
+
+
+def encodage(dico, fichier_entree, fichier_sortie, arbre):
     out_str = ""
     with open(fichier_entree, "r") as file_in:
         with open(fichier_sortie, "wb") as file_out:
@@ -235,6 +256,10 @@ def encodage(dico, fichier_entree, fichier_sortie):
 
             # On veut savoir combien de bit il nous reste
             stay = len(out_str) % 8
+            padding = 8 - stay
+            file_out.write(padding.to_bytes(1, "little"))
+
+            header_huffman_tree_write(file_out, dico)
 
             for i in range(0, nb_it):
                 # On récupère notre octet et on converti notre chaine binaire en integer
@@ -275,11 +300,16 @@ if __name__ == "__main__":
     # print(codage)
 
     # Feyes = frequences_depuis_texte("eyes.txt")
-    Feyes = frequences(caracteres, proba)
-    print(Feyes)
-    eyes_arbre = arbre_huffman(Feyes)
-    for arbre in eyes_arbre:
-        print(arbre)
-    eyes_codage = code_huffman(eyes_arbre[0])
-    print(eyes_codage)
-    encodage(eyes_codage, "eyes.txt", "out")
+    # Feyes = frequences(caracteres, proba)
+    # print(Feyes)
+    # eyes_arbre = arbre_huffman(Feyes)
+    # for arbre in eyes_arbre:
+    #    print(arbre)
+    # eyes_codage = code_huffman(eyes_arbre[0])
+    # print(eyes_codage)
+    # encodage(eyes_codage, "eyes.txt", "out", eyes_arbre)
+
+    Ft = frequences_depuis_texte("leHorla.txt")
+    tree = arbre_huffman(Ft)
+    codage = code_huffman(tree[0])
+    encodage(codage, "leHorla.txt", "leHorla.out", tree)
