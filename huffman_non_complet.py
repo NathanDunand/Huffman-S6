@@ -3,9 +3,6 @@
 #####   Codes de Huffman             		###
 ####################################################
 
-"""from heapq import *
-import heapq"""
-import pickle
 import math
 
 ###  distribution de proba sur les letrres
@@ -82,7 +79,7 @@ def frequences(tableau_car, proba_car):
     return table
 
 
-def frequences_depuis_texte(path):
+def frequences_from_text(path):
     nb_symboles = 0
     occurences = []
     lettres = []
@@ -91,15 +88,14 @@ def frequences_depuis_texte(path):
             c = file.read(1)
             if not c:
                 break
-            if c != "\n":
-                try:
-                    lettres.index(c)
-                except:
-                    lettres.append(c)
-                    occurences.append(0)
-                index_c = lettres.index(c)
-                occurences[index_c] += 1
-                nb_symboles += 1
+            try:
+                lettres.index(c)
+            except:
+                lettres.append(c)
+                occurences.append(0)
+            index_c = lettres.index(c)
+            occurences[index_c] += 1
+            nb_symboles += 1
 
     for i in range(0, len(occurences)):
         occurences[i] = round((occurences[i] / nb_symboles), 4)
@@ -229,7 +225,7 @@ def header_huffman_tree_write(file_out, dico: dict):
 
     for key in dico:
         print(key + " " + str(ord(key)))
-        file_out.write(ord(key).to_bytes(1, "little"))
+        file_out.write(ord(key).to_bytes(2, "little"))
 
         code_padding = (8 * nb_octet_per_letter) - len(dico.get(key))
         file_out.write((code_padding).to_bytes(1, "little"))
@@ -259,7 +255,7 @@ def encodage(dico, fichier_entree, fichier_sortie, arbre):
             padding = 8 - stay
             file_out.write(padding.to_bytes(1, "little"))
 
-            header_huffman_tree_write(file_out, dico)
+            # header_huffman_tree_write(file_out, dico)
 
             for i in range(0, nb_it):
                 # On récupère notre octet et on converti notre chaine binaire en integer
@@ -277,8 +273,6 @@ def encodage(dico, fichier_entree, fichier_sortie, arbre):
 
 ###  Ex.4  décodage d'un fichier compresse
 # Eerie eyeseen
-
-
 def decodage(arbre, fichierCompresse):
     # à compléter
     decode = decodage(H, "leHorlaEncoded.txt")
@@ -312,4 +306,5 @@ if __name__ == "__main__":
     Ft = frequences_depuis_texte("leHorla.txt")
     tree = arbre_huffman(Ft)
     codage = code_huffman(tree[0])
+    print(codage)
     encodage(codage, "leHorla.txt", "leHorla.out", tree)
