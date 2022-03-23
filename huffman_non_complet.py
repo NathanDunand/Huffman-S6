@@ -215,6 +215,7 @@ def code_huffman(arbre):
 
 
 def header_huffman_tree_write(file_out, dico: dict):
+    print(dico)
     letter_code_max_size = len(max(dico.values(), key=len))
     nb_octet_per_letter = math.ceil(letter_code_max_size / 8)
     nb_letter_in_dico = len(dico)
@@ -275,8 +276,7 @@ def encodage(dico, fichier_entree, fichier_sortie, arbre):
 # Eerie eyeseen
 def decodage(arbre, fichierCompresse):
     # à compléter
-    decode = decodage(H, "leHorlaEncoded.txt")
-    print(decode)
+    decode = decodage(H, "leHorla.out")
 
 
 if __name__ == "__main__":
@@ -304,7 +304,12 @@ if __name__ == "__main__":
     # encodage(eyes_codage, "eyes.txt", "out", eyes_arbre)
 
     Ft = frequences_depuis_texte("leHorla.txt")
+    print("fréquence : " + str(Ft))
     tree = arbre_huffman(Ft)
+    print("Arbre Huffman : " + str(tree))
     codage = code_huffman(tree[0])
     print(codage)
+    print("Code Huffman : " + str(codage))
     encodage(codage, "leHorla.txt", "leHorla.out", tree)
+
+# encodage fonctionne !
