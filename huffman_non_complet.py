@@ -79,7 +79,7 @@ def frequences(tableau_car, proba_car):
     return table
 
 
-def frequences_from_text(path):
+def frequences_depuis_texte(path):
     nb_symboles = 0
     occurences = []
     lettres = []
@@ -214,28 +214,39 @@ def code_huffman(arbre):
 ###  Ex.3  encodage d'un texte contenu dans un fichier
 
 
-def header_huffman_tree_write(file_out, dico: dict):
+def header_huffman_tree_write(file_out, dico):
     print(dico)
-    letter_code_max_size = len(max(dico.values(), key=len))
-    nb_octet_per_letter = math.ceil(letter_code_max_size / 8)
-    nb_letter_in_dico = len(dico)
+    dict_encoded = ""
+    code_encoded = ""
 
-    longueur_dico = 1 + (1 + 1 + nb_octet_per_letter) * nb_letter_in_dico
-    file_out.write(longueur_dico.to_bytes(1, "little"))
-    file_out.write(nb_octet_per_letter.to_bytes(1, "little"))
+    longeur_dico_bit = 0
+    for lettre in dico:
+        code = dico.get(lettre)
+        longeur_dico_bit += 16 + 8 + len(code)
 
-    for key in dico:
-        print(key + " " + str(ord(key)))
-        file_out.write(ord(key).to_bytes(2, "little"))
+        unicode_lettre = format(ord(lettre), "#018b")[2:]
+        longueur_code = format(len(dico.get(lettre)), "#010b")[2:]
+        code_lettre = dico.get(lettre)
+        dict_encoded += unicode_lettre + longueur_code
+        code_encoded += code_lettre
 
-        code_padding = (8 * nb_octet_per_letter) - len(dico.get(key))
-        file_out.write((code_padding).to_bytes(1, "little"))
+    dict_encoded += code_encoded
+    longeur_dico_octet = math.ceil(longeur_dico_bit / 8)
+    padding_dico_octet = 8 - (longeur_dico_bit % 8)
 
-        print(int(dico.get(key), 2))
-        file_out.write(int(dico.get(key), 2).to_bytes(nb_octet_per_letter, "little"))
+    file_out.write(padding_dico_octet.to_bytes(1, "little"))
+    file_out.write(longeur_dico_octet.to_bytes(2, "big"))
+    file_out.write(len(dico).to_bytes(1, "little"))
+
+    for i in range(longeur_dico_octet):
+        chain = dict_encoded[8 * i : 8 + 8 * i]
+        if not chain:
+            break
+        buffer = int(chain, 2)
+        file_out.write(buffer.to_bytes(1, "big"))
 
 
-def encodage(dico, fichier_entree, fichier_sortie, arbre):
+def encodage(dico, fichier_entree, fichier_sortie):
     out_str = ""
     with open(fichier_entree, "r") as file_in:
         with open(fichier_sortie, "wb") as file_out:
@@ -256,7 +267,7 @@ def encodage(dico, fichier_entree, fichier_sortie, arbre):
             padding = 8 - stay
             file_out.write(padding.to_bytes(1, "little"))
 
-            # header_huffman_tree_write(file_out, dico)
+            header_huffman_tree_write(file_out, dico)
 
             for i in range(0, nb_it):
                 # On récupère notre octet et on converti notre chaine binaire en integer
@@ -274,9 +285,86 @@ def encodage(dico, fichier_entree, fichier_sortie, arbre):
 
 ###  Ex.4  décodage d'un fichier compresse
 # Eerie eyeseen
-def decodage(arbre, fichierCompresse):
-    # à compléter
-    decode = decodage(H, "leHorla.out")
+def decodage(fichierCompresse, arbre=None):
+    with open(fichierCompresse, "rb") as file:
+        content = file.read()
+        content_bin = bin(int.from_bytes(content, "big"))[2:]
+        content_bin = "0" * (8 - (len(content_bin) % 8)) + content_bin
+        # print(content_bin)
+
+        padding_text, content_bin = content_bin[:8], content_bin[8:]
+        padding_dico, content_bin = content_bin[:8], content_bin[8:]
+        len_dict, content_bin = content_bin[:16], content_bin[16:]
+        number_of_letter, content_bin = content_bin[:8], content_bin[8:]
+
+        padding_text = int(padding_text, 2)
+        padding_dico = int(padding_dico, 2)
+        len_dict = int(len_dict, 2)
+        number_of_letter = int(number_of_letter, 2)
+
+        letter_dict = {}
+
+        # print(content_bin)
+        size_code = 0
+        for i in range(number_of_letter):
+            unicode, content_bin = content_bin[:16], content_bin[16:]
+            size, content_bin = content_bin[:8], content_bin[8:]
+
+            unicode = chr(int(unicode, 2))
+            size = int(size, 2)
+            size_code += size
+            # print(unicode)
+
+            letter_dict[unicode] = size
+
+        while size_code % 8 != 0:
+            size_code += 1
+        # remove padding
+        only_code, content_bin = content_bin[:size_code], content_bin[size_code:]
+        # print(only_code)
+        # print(only_code[: len(only_code) - 8])
+        # print(only_code[len(only_code) - 8 :][-(8 - padding_dico) :])
+
+        only_code = (
+            only_code[: len(only_code) - 8]
+            + only_code[len(only_code) - 8 :][-(8 - padding_dico) :]
+        )
+
+        # print(only_code)
+        # print(content_bin)
+
+        for letter in letter_dict:
+            size = letter_dict.get(letter)
+            code, only_code = only_code[:size], only_code[size:]
+
+            letter_dict[letter] = code
+
+        content_bin = (
+            content_bin[: len(content_bin) - 8]
+            + content_bin[len(content_bin) - 8 :][-(8 - padding_text) :]
+        )
+
+        print(letter_dict)
+        print(content_bin)
+
+        decoded_text = ""
+        while len(content_bin) > 0:
+            keep = ""
+            # print(content_bin)
+            for k in letter_dict:
+                code_letter = letter_dict.get(k)
+                # print("let = " + k)
+                # print(code_letter + "==" + content_bin[: len(code_letter)])
+                if code_letter == content_bin[: len(code_letter)]:
+                    if keep == "":
+                        keep = k
+                    elif len(code_letter) > len(letter_dict.get(keep)):
+                        keep = k
+                # print("keep  =" + keep)
+            decoded_text += keep
+            content_bin = content_bin[len(letter_dict.get(keep)) :]
+
+        print("TEXTE DECODE : " + decoded_text)
 
 
 if __name__ == "__main__":
@@ -303,13 +391,27 @@ if __name__ == "__main__":
     # print(eyes_codage)
     # encodage(eyes_codage, "eyes.txt", "out", eyes_arbre)
 
+    # Ft = frequences_depuis_texte("unelettre.txt")
+    # print("fréquence : " + str(Ft))
+    # tree = arbre_huffman(Ft)
+    # print("Arbre Huffman : " + str(tree))
+    # codage = code_huffman(tree[0])
+    # print(codage)
+    # print("Code Huffman : " + str(codage))
+    # encodage(codage, "leHorla.txt", "leHorla.out", tree)
+
+    Ft = frequences_depuis_texte("unelettre.txt")
+    tree = arbre_huffman(Ft)[0]
+    code = code_huffman(tree)
+    encodage(code, "unelettre.txt", "unelettreencode")
+
+    decodage("unelettreencode")
+
     Ft = frequences_depuis_texte("leHorla.txt")
-    print("fréquence : " + str(Ft))
-    tree = arbre_huffman(Ft)
-    print("Arbre Huffman : " + str(tree))
-    codage = code_huffman(tree[0])
-    print(codage)
-    print("Code Huffman : " + str(codage))
-    encodage(codage, "leHorla.txt", "leHorla.out", tree)
+    tree = arbre_huffman(Ft)[0]
+    code = code_huffman(tree)
+    encodage(code, "leHorla.txt", "leHorla.out")
+
+    decodage("leHorla.out")
 
 # encodage fonctionne !
