@@ -67,10 +67,6 @@ proba = [
     0.0021,
     0.0008,
 ]
-"""
-caracteres = ["E", "i", "y", "l", "k", ".", "r", "s", "n", "a", " ", "e"]
-proba = [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 8]
-"""
 
 
 def frequences(tableau_car, proba_car):
@@ -362,6 +358,13 @@ def decodage(fichierCompresse, arbre=False):
 
 
 if __name__ == "__main__":
+    """Ft = frequences(caracteres, proba)
+    tree = arbre_huffman(Ft)[0]
+    code = code_huffman(tree)
+    encodage(code, "unelettre.txt", "unelettreencode", False)
+
+    decodage("unelettreencode", True)"""
+
     Ft = frequences(caracteres, proba)
     tree = arbre_huffman(Ft)[0]
     code = code_huffman(tree)
