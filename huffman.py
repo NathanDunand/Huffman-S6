@@ -3,10 +3,12 @@
 #####   Codes de Huffman             		###
 ####################################################
 
+from difflib import diff_bytes
 import math
 import unidecode
+import os
 
-###  distribution de proba sur les letrres
+# distribution de proba sur les letrres
 
 caracteres = [
     " ",
@@ -68,6 +70,17 @@ proba = [
     0.0008,
 ]
 
+"""
+Cette méthode crée un dictionnaire de fréquences en fonction d'un tableau
+de caractères et d'un tableau de probabilités
+
+IN:
+    tableau_car : tableau de caractères
+    proba_car   : tableau de probabilités 
+OUT:
+    retourne un dictionnaire qui combine les deux tableaux donnés en entrée
+"""
+
 
 def frequences(tableau_car, proba_car):
     table = {}
@@ -75,6 +88,17 @@ def frequences(tableau_car, proba_car):
     for i in range(n):
         table[tableau_car[i]] = proba_car[i]
     return table
+
+
+"""
+Cette méthode crée un dictionnaire de fréquences en fonction d'un text
+donné en entré.
+
+IN:
+    path    : chemin du fichier à lire
+OUT:
+    retourne un dictionnaire qui combine les deux tableaux donnés en entrée
+"""
 
 
 def frequences_depuis_texte(path):
@@ -100,7 +124,12 @@ def frequences_depuis_texte(path):
     return frequences(lettres, occurences)
 
 
-###  la classe Arbre
+"""
+Classe Arbre
+
+Cette classe permet de modéliser un arbre binaire ou chaque feuille de cet
+arbre est un objet Arbre.
+"""
 
 
 class Arbre:
@@ -142,7 +171,18 @@ class Arbre:
         return self.frequence <= other.frequence
 
 
-# ajoute un élément dans l'arbre, avec invariance
+"""
+Ajoute un élément dans l'arbre, avec invariance
+
+IN:
+    liste   : liste contenant l'ensemble des arbres 
+    arbre   : arbre a ajouté dans la liste
+OUT:
+    Retourne un booléen qui agit comme un flag, True si
+    l'ajout est réussi, sinon False
+"""
+
+
 def heappush(liste, arbre):
     if len(liste) == 1 or not liste:
         liste.append(arbre)
@@ -160,14 +200,23 @@ def heappush(liste, arbre):
     return False
 
 
-# enlève le plus petit élement
+"""
+Enlève le plus petit élement de la liste
+
+IN:
+    liste   : liste dans laquelle il faut retirer l'élement
+OUT:
+    Retourne un arbre
+"""
+
+
 def heappop(liste):
     if not liste:
         return None
     return liste.pop(0)
 
 
-###  Ex.1  construction de l'arbre d'Huffamn utilisant la structure de "tas binaire"
+# Ex.1  construction de l'arbre d'Huffamn utilisant la structure de "tas binaire"
 def arbre_huffman(f):
     # pour créer la liste de départ
     huffman_list = []
@@ -185,11 +234,10 @@ def arbre_huffman(f):
             gauche.frequence + droite.frequence, gauche=gauche, droit=droite
         )
         heappush(huffman_list, nouveau_noeud)
-        # heapify(huffman_list)
     return huffman_list
 
 
-###  Ex.2  construction du code d'Huffamn
+# Ex.2  construction du code d'Huffamn
 
 
 def parcours(arbre: Arbre, prefixe, code):
@@ -209,11 +257,11 @@ def code_huffman(arbre):
     return code
 
 
-###  Ex.3  encodage d'un texte contenu dans un fichier
+# Ex.3  encodage d'un texte contenu dans un fichier
 
 
 def header_huffman_tree_write(file_out, dico):
-    print(dico)
+    # print(dico)
     dict_encoded = ""
     code_encoded = ""
 
@@ -283,8 +331,11 @@ def encodage(dico, fichier_entree, fichier_sortie, dans_fichier=True):
                 buffer = int(out_str[len(out_str) - stay :], 2)
                 file_out.write(buffer.to_bytes(1, "little"))
 
+    diff_size = 1 - (os.path.getsize(fichier_sortie) / os.path.getsize(fichier_entree))
+    print("Le taux de compression est le suivant : " + str(diff_size * 100)[:5] + " %")
 
-###  Ex.4  décodage d'un fichier compresse
+
+# Ex.4  décodage d'un fichier compresse
 # Eerie eyeseen
 def decodage(fichierCompresse, arbre=False):
     with open(fichierCompresse, "rb") as file:
@@ -339,7 +390,7 @@ def decodage(fichierCompresse, arbre=False):
             + content_bin[len(content_bin) - 8 :][-(8 - padding_text) :]
         )
 
-        print(letter_dict)
+        # print(letter_dict)
 
         decoded_text = ""
         while len(content_bin) > 0:
@@ -354,7 +405,7 @@ def decodage(fichierCompresse, arbre=False):
             decoded_text += keep
             content_bin = content_bin[len(letter_dict.get(keep)) :]
 
-        print("TEXTE DECODE : " + decoded_text)
+        # print("TEXTE DECODE : " + decoded_text)
 
 
 if __name__ == "__main__":
@@ -365,18 +416,16 @@ if __name__ == "__main__":
 
     decodage("unelettreencode", True)"""
 
-    Ft = frequences(caracteres, proba)
+    """Ft = frequences(caracteres, proba)
     tree = arbre_huffman(Ft)[0]
     code = code_huffman(tree)
     encodage(code, "unelettre.txt", "unelettreencode", False)
 
-    decodage("unelettreencode", True)
+    decodage("unelettreencode", True)"""
 
-"""
     Ft = frequences_depuis_texte("leHorla.txt")
-    tree = arbre_huffman(Ft)[0]he
+    tree = arbre_huffman(Ft)[0]
     code = code_huffman(tree)
     encodage(code, "leHorla.txt", "leHorla.out")
 
     decodage("leHorla.out")
-    """
