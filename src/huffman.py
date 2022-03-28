@@ -3,10 +3,7 @@
 #####   Codes de Huffman             		###
 ####################################################
 
-from difflib import diff_bytes
 import math
-from black import out
-import unidecode
 import os
 
 # distribution de proba sur les letrres
