@@ -3,11 +3,9 @@
 #####   Codes de Huffman             		###
 ####################################################
 
-from difflib import diff_bytes
 import math
-from black import out
-import unidecode
 import os
+import sys
 
 # distribution de proba sur les letrres
 
@@ -524,8 +522,6 @@ def decodage(fichier_compresse, fichier_sortie, arbre=False):
             + content_bin[len(content_bin) - 8 :][-(8 - padding_text) :]
         )
 
-        # print(letter_dict)
-
         with open(fichier_sortie, "w") as file:
             while len(content_bin) > 0:
                 keep = ""
@@ -541,4 +537,42 @@ def decodage(fichier_compresse, fichier_sortie, arbre=False):
 
 
 if __name__ == "__main__":
-    print("No interface")
+    valid = False
+
+    if len(sys.argv) == 5:
+        if sys.argv[1] == "e":
+            if sys.argv[4] == "0":
+                valid = True
+                encodage(
+                    code_huffman(arbre_huffman(frequences_depuis_texte(sys.argv[2]))),
+                    sys.argv[2],
+                    sys.argv[3],
+                    True,
+                )
+            elif sys.argv[4] == "1":
+                encodage(
+                    code_huffman(arbre_huffman(frequences(caracteres, proba))),
+                    sys.argv[2],
+                    sys.argv[3],
+                    False,
+                )
+                valid = True
+        elif sys.argv[1] == "d":
+            if sys.argv[4] == "0":
+                decodage(sys.argv[2], sys.argv[3], False)
+                valid = True
+            elif sys.argv[4] == "1":
+                decodage(sys.argv[2], sys.argv[3], True)
+                valid = True
+
+    if not valid:
+        print(
+            """Utilisation :
+            Pour encoder :
+                python3 src/huffman.py e file_to_encode file_output [0,1]
+            Pour decoder :
+                python3 src/huffman.py d file_to_decode file_output [0,1]
+            
+            Le mode 0 construit l'arbre en fonction du fichier d'entrée et
+            le mode 1 en fonction de la table de fréquence"""
+        )
