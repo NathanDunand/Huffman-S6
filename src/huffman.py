@@ -336,6 +336,11 @@ def heappop(liste):
 
 
 # Ex.1  construction de l'arbre d'Huffamn utilisant la structure de "tas binaire"
+"""
+Cette fonction construit l'arbre de huffman à partir d'un dictionnaire de fréquence
+"""
+
+
 def arbre_huffman(f):
     if f == None:
         return None
@@ -361,6 +366,9 @@ def arbre_huffman(f):
 
 
 # Ex.2  construction du code d'Huffamn
+"""
+Méthode de parcours d'arbre pour déterminer les code des lettres
+"""
 
 
 def parcours(arbre: Arbre, prefixe, code):
@@ -375,6 +383,11 @@ def parcours(arbre: Arbre, prefixe, code):
         code[arbre.lettre] = prefixe
 
 
+"""
+Cette fonction renvoie un dictionnaire contenant les lettres et leur code
+"""
+
+
 def code_huffman(arbre):
     # on remplit le dictionnaire du code d'Huffman en parcourant l'arbre
     code = {}
@@ -385,6 +398,10 @@ def code_huffman(arbre):
 
 
 # Ex.3  encodage d'un texte contenu dans un fichier
+
+"""
+Cette fonction permet d'écrire le header du fichier encodé
+"""
 
 
 def header_huffman_tree_write(file_out, dico):
@@ -416,6 +433,17 @@ def header_huffman_tree_write(file_out, dico):
             break
         buffer = int(chain, 2)
         file_out.write(buffer.to_bytes(1, "big"))
+
+
+"""
+Cette fonction encode le fichier donné en entrée
+
+IN:
+    dico : dictionnaire contenant les codes des lettres
+    fichier_entree : fichier à encoder
+    fichier_sortie : fichier de sortie
+    dans_fichier : True si l'arbre est à mettre dans le fichier, sinon False
+"""
 
 
 def encodage(dico, fichier_entree, fichier_sortie, dans_fichier=True):
@@ -468,7 +496,16 @@ def encodage(dico, fichier_entree, fichier_sortie, dans_fichier=True):
     )
 
 
-# Ex.4  décodage d'un fichier compresse
+"""
+Cette fonction décode le fichier donné en entrée
+
+IN:
+    fichier_compresse : fichier à décompresser
+    fichier_sortie : fichier décompressé
+    arbre : False si l'arbre est dans le fichier, sinon True
+"""
+
+
 def decodage(fichier_compresse, fichier_sortie, arbre=False):
     with open(fichier_compresse, "rb") as file:
         content = file.read()
