@@ -5,12 +5,39 @@
 
 from difflib import diff_bytes
 import math
+from black import out
 import unidecode
 import os
 
 # distribution de proba sur les letrres
 
 caracteres = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
     " ",
     "a",
     "b",
@@ -38,37 +65,132 @@ caracteres = [
     "x",
     "y",
     "z",
+    "\n",
+    "ù",
+    "é",
+    "è",
+    "à",
+    "ï",
+    "ö",
+    "ë",
+    "ü",
+    "û",
+    "ô",
+    "ê",
+    "â",
+    "î",
+    "ç",
+    ".",
+    ";",
+    ":",
+    ",",
+    "'",
+    '"',
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "-",
+    "!",
+    "?",
 ]
 
 proba = [
-    0.1835,
-    0.0640,
-    0.0064,
-    0.0259,
-    0.0260,
-    0.1486,
-    0.0078,
-    0.0083,
-    0.0061,
-    0.0591,
-    0.0023,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,
+    0.005,  # Z
+    0.12,  # space
+    0.07,
+    0.01,
+    0.01,
+    0.01,
+    0.10,
+    0.01,
+    0.01,
+    0.01,
+    0.05,
+    0.0003,
+    0.0003,
+    0.05,
+    0.02,
+    0.06,
+    0.05,
+    0.02,
+    0.0005,
+    0.05,
+    0.05,
+    0.05,
+    0.05,
+    0.01,
+    0.001,
+    0.003,
+    0.004,
+    0.001,  # z
+    0.001,
+    0.0002,
+    0.002,
+    0.003,
+    0.0028,
+    0.0002,
+    0.0004,
     0.0001,
-    0.0465,
-    0.0245,
-    0.0623,
-    0.0459,
-    0.0256,
-    0.0081,
-    0.0555,
-    0.0697,
-    0.0572,
-    0.0506,
-    0.0100,
-    0.0000,
-    0.0031,
-    0.0021,
-    0.0008,
+    0.0001,
+    0.0001,
+    0.0003,
+    0.0003,
+    0.0004,
+    0.0004,
+    0.0006,
+    0.005,
+    0.002,
+    0.002,
+    0.004,
+    0.006,
+    0.006,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
 ]
+
 
 """
 Cette méthode crée un dictionnaire de fréquences en fonction d'un tableau
@@ -84,7 +206,7 @@ OUT:
 
 def frequences(tableau_car, proba_car):
     table = {}
-    n = len(tableau_car)
+    n = int((len(tableau_car) + len(proba_car)) / 2)
     for i in range(n):
         table[tableau_car[i]] = proba_car[i]
     return table
@@ -142,9 +264,6 @@ class Arbre:
     def estFeuille(self):
         return self.gauche == None and self.droit == None
 
-    def estVide(self):
-        return self == None
-
     def __str__(self):
         return (
             "<"
@@ -183,8 +302,10 @@ OUT:
 """
 
 
-def heappush(liste, arbre):
-    if len(liste) == 1 or not liste:
+def heappush(liste, arbre: Arbre):
+    if not arbre or liste == None:
+        return False
+    if len(liste) <= 1:
         liste.append(arbre)
         return True
     for k in range(0, len(liste) - 1):
@@ -218,6 +339,8 @@ def heappop(liste):
 
 # Ex.1  construction de l'arbre d'Huffamn utilisant la structure de "tas binaire"
 def arbre_huffman(f):
+    if f == None:
+        return None
     # pour créer la liste de départ
     huffman_list = []
     for i in f:
@@ -226,7 +349,9 @@ def arbre_huffman(f):
 
     # on construit l'arbre
     huffman_list.sort()
-    while len(huffman_list) != 1:
+    if len(huffman_list) == 0:
+        return None
+    while len(huffman_list) > 1:
         # assemblage des deux arbres en un seul
         gauche = heappop(huffman_list)
         droite = heappop(huffman_list)
@@ -234,7 +359,7 @@ def arbre_huffman(f):
             gauche.frequence + droite.frequence, gauche=gauche, droit=droite
         )
         heappush(huffman_list, nouveau_noeud)
-    return huffman_list
+    return huffman_list[0]
 
 
 # Ex.2  construction du code d'Huffamn
@@ -247,12 +372,16 @@ def parcours(arbre: Arbre, prefixe, code):
         if arbre.droit:
             parcours(arbre.droit, prefixe + "1", code)
     else:
+        if prefixe == "":
+            prefixe = "0"
         code[arbre.lettre] = prefixe
 
 
 def code_huffman(arbre):
     # on remplit le dictionnaire du code d'Huffman en parcourant l'arbre
     code = {}
+    if arbre == None:
+        return None
     parcours(arbre, "", code)
     return code
 
@@ -261,7 +390,6 @@ def code_huffman(arbre):
 
 
 def header_huffman_tree_write(file_out, dico):
-    # print(dico)
     dict_encoded = ""
     code_encoded = ""
 
@@ -293,6 +421,8 @@ def header_huffman_tree_write(file_out, dico):
 
 
 def encodage(dico, fichier_entree, fichier_sortie, dans_fichier=True):
+    if dico == None:
+        return print("Il n'y a rien à encoder")
     out_str = ""
     with open(fichier_entree, "r") as file_in:
         with open(fichier_sortie, "wb") as file_out:
@@ -300,8 +430,6 @@ def encodage(dico, fichier_entree, fichier_sortie, dans_fichier=True):
                 c = file_in.read(1)
                 if not c:
                     break
-                if not dans_fichier:
-                    c = unidecode.unidecode(c.lower())
                 if not dico.get(c):
                     c = " "
                 out_c = dico.get(c)
@@ -331,14 +459,20 @@ def encodage(dico, fichier_entree, fichier_sortie, dans_fichier=True):
                 buffer = int(out_str[len(out_str) - stay :], 2)
                 file_out.write(buffer.to_bytes(1, "little"))
 
+    if out_str == "":
+        return print("Il n'y a rien à encoder")
+
     diff_size = 1 - (os.path.getsize(fichier_sortie) / os.path.getsize(fichier_entree))
-    print("Le taux de compression est le suivant : " + str(diff_size * 100)[:5] + " %")
+    print(
+        "Le taux de compression est le suivant : "
+        + str(round(diff_size * 100, 2))
+        + " %"
+    )
 
 
 # Ex.4  décodage d'un fichier compresse
-# Eerie eyeseen
-def decodage(fichierCompresse, arbre=False):
-    with open(fichierCompresse, "rb") as file:
+def decodage(fichier_compresse, fichier_sortie, arbre=False):
+    with open(fichier_compresse, "rb") as file:
         content = file.read()
         content_bin = bin(int.from_bytes(content, "big"))[2:]
         content_bin = "0" * (8 - (len(content_bin) % 8)) + content_bin
@@ -382,7 +516,7 @@ def decodage(fichierCompresse, arbre=False):
 
                 letter_dict[letter] = code
         else:
-            tree = arbre_huffman(frequences(caracteres, proba))[0]
+            tree = arbre_huffman(frequences(caracteres, proba))
             letter_dict = code_huffman(tree)
 
         content_bin = (
@@ -392,40 +526,19 @@ def decodage(fichierCompresse, arbre=False):
 
         # print(letter_dict)
 
-        decoded_text = ""
-        while len(content_bin) > 0:
-            keep = ""
-            for k in letter_dict:
-                code_letter = letter_dict.get(k)
-                if code_letter == content_bin[: len(code_letter)]:
-                    if keep == "":
-                        keep = k
-                    elif len(code_letter) > len(letter_dict.get(keep)):
-                        keep = k
-            decoded_text += keep
-            content_bin = content_bin[len(letter_dict.get(keep)) :]
-
-        # print("TEXTE DECODE : " + decoded_text)
+        with open(fichier_sortie, "w") as file:
+            while len(content_bin) > 0:
+                keep = ""
+                for k in letter_dict:
+                    code_letter = letter_dict.get(k)
+                    if code_letter == content_bin[: len(code_letter)]:
+                        if keep == "":
+                            keep = k
+                        elif len(code_letter) > len(letter_dict.get(keep)):
+                            keep = k
+                file.write(keep)
+                content_bin = content_bin[len(letter_dict.get(keep)) :]
 
 
 if __name__ == "__main__":
-    """Ft = frequences(caracteres, proba)
-    tree = arbre_huffman(Ft)[0]
-    code = code_huffman(tree)
-    encodage(code, "unelettre.txt", "unelettreencode", False)
-
-    decodage("unelettreencode", True)"""
-
-    """Ft = frequences(caracteres, proba)
-    tree = arbre_huffman(Ft)[0]
-    code = code_huffman(tree)
-    encodage(code, "unelettre.txt", "unelettreencode", False)
-
-    decodage("unelettreencode", True)"""
-
-    Ft = frequences_depuis_texte("leHorla.txt")
-    tree = arbre_huffman(Ft)[0]
-    code = code_huffman(tree)
-    encodage(code, "leHorla.txt", "leHorla.out")
-
-    decodage("leHorla.out")
+    print("No interface")
